@@ -1,7 +1,7 @@
 from curses.ascii import US
 from flask import Flask, render_template, request, escape, session
 from mysqlx import InterfaceError
-from DBcm import UseDatabase, ConnectionError, CredentialsError
+from DBcm import SQLError, UseDatabase, ConnectionError, CredentialsError
 from checker import check_logged_in
 
 app = Flask(__name__)
@@ -88,6 +88,8 @@ def view_the_log() -> 'html':
         print('Is your database turned on? Error:', str(err))
     except CredentialsError as err:
         print('User-id/Password issues. Error:', str(err))
+    except SQLError as err:
+        print('Is your query correct? Error:', str(err))
     except Exception as err:
         print('There has been an exception:', str(err))
     return 'Error'
