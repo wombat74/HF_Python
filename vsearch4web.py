@@ -1,8 +1,11 @@
 from curses.ascii import US
-from flask import Flask, render_template, request, escape, session
+from flask import Flask, copy_current_request_context, render_template, request, escape, session
 from mysqlx import InterfaceError
 from DBcm import SQLError, UseDatabase, ConnectionError, CredentialsError
 from checker import check_logged_in
+from threading import Thread
+from time import sleep
+
 
 app = Flask(__name__)
 
@@ -27,25 +30,24 @@ def do_logout() -> str:
     session.pop('logged_in')
     return 'You are now logged out.'
 
-
-def log_request(req: 'flask_request', res: str) -> None:
-    """Configure connection to database, write values to log table"""
-
-    with UseDatabase(app.config['dbconfig']) as cursor:
-
-        _SQL = """INSERT INTO log (phrase, letters, ip, browser_string, results)
-                VALUES (%s, %s, %s, %s, %s)"""
-
-        cursor.execute(_SQL, (req.form['phrase'],
-                              req.form['letters'],
-                              req.remote_addr,
-                              req.user_agent.browser,
-                              res, ))
-
-
 @app.route('/search4', methods=['POST'])
 def do_search() -> 'html':
     """Extract the posted data; perform the search; return results."""
+
+    @copy_current_request_context
+    def log_request(req: 'flask_request', res: str) -> None:
+        """Configure connection to database, write values to log table"""
+        sleep(15)
+        with UseDatabase(app.config['dbconfig']) as cursor:
+
+            _SQL = """INSERT INTO log (phrase, letters, ip, browser_string, results)
+                    VALUES (%s, %s, %s, %s, %s)"""
+
+            cursor.execute(_SQL, (req.form['phrase'],
+                                req.form['letters'],
+                                req.remote_addr,
+                                req.user_agent.browser,
+                                res, ))
 
     phrase = request.form['phrase']
     letters = request.form['letters']
@@ -53,7 +55,8 @@ def do_search() -> 'html':
     results = str(search4letters(phrase, letters))
 
     try:
-        log_request(request, results)
+        t = Thread(target=log_request, args=(request, results))
+        t.start()
     except ConnectionError as err:
         print('There has been a connection error, please check database!:', str(err))
     except Exception as err:
