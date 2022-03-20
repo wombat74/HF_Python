@@ -14,23 +14,54 @@ with open('buzzers.csv') as data:
 pprint.pprint(flights)
 print()
 
-flights2 = {}
+# dests = set(flights.values())
+# print(dests)
 
-for k, v in flights.items():
-    flights2[convert2ampm(k)] = v.title()
+# West_End_Times = [k for k, v in flights.items() if v == 'WEST END']
+# print(West_End_Times)
 
-pprint.pprint(flights2)
+# for dest in set(flights.values()):
+#     print(dest, '->', [k for k, v in flights.items() if v == dest])
+
+when = {}
+for dest in set(flights.values()):
+    when[dest] = [k for k, v in flights.items() if v == dest]
+
+pprint.pprint(when)
 print()
 
-flight_times = []
-for ft in flights.keys():
-    flight_times.append(convert2ampm(ft))
+when2 = {dest: [k for k, v in flights.items() if v == dest] for dest in set(flights.values())}
+pprint.pprint(when2)
 
-print(flight_times)
-print()
+# flights2 = {}
 
-destinations = []
-for dest in flights.values():
-    destinations.append(dest.title())
+# for k, v in flights.items():
+#     flights2[convert2ampm(k)] = v.title()
 
-print(destinations)
+# more_flights = {convert2ampm(k): v.title() 
+#                 for k, v in flights.items() 
+#                 if v == 'FREEPORT'}
+
+# pprint.pprint(more_flights)
+# print()
+
+# flight_times = []
+# for ft in flights.keys():
+#     flight_times.append(convert2ampm(ft))
+
+# print(flight_times)
+# print()
+
+# destinations = []
+# for dest in flights.values():
+#     destinations.append(dest.title())
+
+# print(destinations)
+# print()
+
+# more_dests = [dest.title() for dest in flights.values()]
+# print(more_dests)
+# print()
+
+# more_flights = [convert2ampm(ft) for ft in flights.keys()]
+# print(more_flights)
